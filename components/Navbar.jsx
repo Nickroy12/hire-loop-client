@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -15,9 +15,15 @@ const Navbar = () => {
     { name: "Pricing", href: "/pricing" },
   ];
 
+  // Auto close mobile menu on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   return (
     <div className="w-full flex justify-center mt-4">
       <nav className="w-11/12 md:w-10/12">
+        {/* Navbar Container */}
         <div
           className="flex items-center justify-between px-4 py-3 rounded-2xl
           bg-black/60 backdrop-blur-md border border-white/10 shadow-lg"
@@ -52,7 +58,7 @@ const Navbar = () => {
             })}
           </ul>
 
-          {/* Right Buttons */}
+          {/* Right Side Desktop Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
@@ -89,10 +95,12 @@ const Navbar = () => {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`block ${
-                        isActive ? "text-white font-medium" : ""
-                      }`}
                       onClick={() => setOpen(false)}
+                      className={`block transition ${
+                        isActive
+                          ? "text-white font-medium"
+                          : "text-gray-300"
+                      }`}
                     >
                       {item.name}
                     </Link>
@@ -100,19 +108,26 @@ const Navbar = () => {
                 );
               })}
 
-              <hr className="border-white/10" />
+              <hr className="border-white/10 my-2" />
 
-              <li>
-                <Link href="/login" onClick={() => setOpen(false)}>
+              {/* Mobile Auth Buttons */}
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-gray-300 hover:text-white text-sm"
+                >
                   Sign in
                 </Link>
-              </li>
 
-              <li className="text-white font-medium">
-                <Link href="/signup" onClick={() => setOpen(false)}>
+                <Link
+                  href="/signup"
+                  onClick={() => setOpen(false)}
+                  className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-200"
+                >
                   Get Started
                 </Link>
-              </li>
+              </div>
             </ul>
           </div>
         )}
