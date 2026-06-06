@@ -7,15 +7,17 @@ import { Upload } from "lucide-react";
 
 export default function SignupPage() {
   const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
 
-  // preview
   const handleChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
-  // upload to imgbb
   const uploadToImgBB = async (file) => {
     const formData = new FormData();
     formData.append("image", file);
@@ -29,145 +31,219 @@ export default function SignupPage() {
     );
 
     const data = await res.json();
-    if (!data.success) throw new Error("Upload failed");
+
+    if (!data.success) {
+      throw new Error("Image upload failed");
+    }
 
     return data.data.url;
   };
 
-  // submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+    try {
+      setLoading(true);
 
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const imageFile = formData.get("image");
+      const formData = new FormData(e.currentTarget);
 
-    let imageUrl = "";
+      const name = formData.get("name");
+      const email = formData.get("email");
+      const password = formData.get("password");
+      const role = formData.get("role");
+      const imageFile = formData.get("image");
 
-    if (imageFile && imageFile.size > 0) {
-      imageUrl = await uploadToImgBB(imageFile);
+      let imageUrl = "";
+
+      if (imageFile && imageFile.size > 0) {
+        imageUrl = await uploadToImgBB(imageFile);
+      }
+
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        image: imageUrl,
+        role,
+        callbackURL: "/",
+      });
+
+      if (error) {
+        alert(error.message || "Signup failed");
+        return;
+      }
+
+      alert("Account created successfully!");
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong!");
+    } finally {
+      setLoading(false);
     }
-
-    const { data, error } = await authClient.signUp.email({
-      name,
-      email,
-      password,
-      image: imageUrl,
-      callbackURL: "/",
-    });
-
-    if (error) {
-      alert(error.message || "Signup failed");
-      return;
-    }
-
-    alert("Signup successful!");
-    console.log(data);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      
-      {/* Card */}
-      <div className="w-full max-w-2xl p-6 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white">
-
-        <h2 className="text-3xl font-bold text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-10">
+      <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl p-8 text-white">
+        <h2 className="text-3xl font-bold text-center mb-2">
           Create Account
         </h2>
 
+        <p className="text-center text-white/60 mb-8">
+          Join as a Job Seeker or Recruiter
+        </p>
+
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Profile Image */}
+          <div className="flex flex-col items-center gap-3">
+            <input
+              ref={inputRef}
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleChange}
+              className="hidden"
+            />
 
-          {/* GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            {/* Avatar */}
-            <div className="md:col-span-2 flex flex-col items-center gap-3">
-
-              <input
-                ref={inputRef}
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={handleChange}
-                className="hidden"
-              />
-
-              <div
-                onClick={() => inputRef.current?.click()}
-                className="w-16 h-16 rounded-full border border-dashed border-purple-400 bg-white/10 flex items-center justify-center cursor-pointer overflow-hidden"
-              >
-                {preview ? (
-                  <img
-                    src={preview}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Upload size={18} />
-                )}
-              </div>
-
-              <span className="text-xs text-white/60">
-                Upload profile image
-              </span>
+            <div
+              onClick={() => inputRef.current?.click()}
+              className="w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-purple-500 bg-white/5 flex items-center justify-center cursor-pointer hover:border-purple-400 transition"
+            >
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Upload size={24} />
+              )}
             </div>
 
+            <p className="text-sm text-white/60">
+              Upload Profile Photo
+            </p>
+          </div>
+
+          {/* Grid */}
+          <div className="grid md:grid-cols-2 gap-5">
             {/* Name */}
             <div>
-              <label className="text-sm mb-2 block">Name</label>
+              <label className="block mb-2 text-sm">
+                Full Name
+              </label>
+
               <input
-                name="name"
                 type="text"
+                name="name"
                 required
                 placeholder="John Doe"
-                className="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/20 outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/20 outline-none focus:border-purple-500"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="text-sm mb-2 block">Email</label>
+              <label className="block mb-2 text-sm">
+                Email
+              </label>
+
               <input
-                name="email"
                 type="email"
+                name="email"
                 required
-                placeholder="email@example.com"
-                className="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/20 outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="john@example.com"
+                className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/20 outline-none focus:border-purple-500"
               />
             </div>
 
             {/* Password */}
             <div className="md:col-span-2">
-              <label className="text-sm mb-2 block">Password</label>
+              <label className="block mb-2 text-sm">
+                Password
+              </label>
+
               <input
-                name="password"
                 type="password"
+                name="password"
                 required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/20 outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="********"
+                className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/20 outline-none focus:border-purple-500"
               />
             </div>
 
+            {/* Role */}
+            <div className="md:col-span-2">
+              <label className="block mb-3 text-sm">
+                Select Your Role
+              </label>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <label className="cursor-pointer rounded-xl border border-white/20 bg-black/30 p-5 hover:border-purple-500 transition">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="seeker"
+                      defaultChecked
+                      className="accent-purple-500"
+                    />
+
+                    <div>
+                      <h4 className="font-semibold">
+                        Job Seeker
+                      </h4>
+
+                      <p className="text-sm text-white/60">
+                        Looking for job opportunities
+                      </p>
+                    </div>
+                  </div>
+                </label>
+
+                <label className="cursor-pointer rounded-xl border border-white/20 bg-black/30 p-5 hover:border-blue-500 transition">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="recruiter"
+                      className="accent-blue-500"
+                    />
+
+                    <div>
+                      <h4 className="font-semibold">
+                        Recruiter
+                      </h4>
+
+                      <p className="text-sm text-white/60">
+                        Hire and manage candidates
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 font-semibold hover:opacity-90 transition"
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 font-semibold hover:opacity-90 transition disabled:opacity-50"
           >
-            Sign Up
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-white/60 mt-5">
+        <p className="text-center text-white/60 text-sm mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-purple-400">
+          <Link
+            href="/login"
+            className="text-purple-400 hover:text-purple-300"
+          >
             Login
           </Link>
         </p>
-
       </div>
     </div>
   );

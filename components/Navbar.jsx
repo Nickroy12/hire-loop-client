@@ -15,6 +15,7 @@ import {
 
 import { useSession, authClient } from "@/lib/auth-client";
 
+
 const Navbar = () => {
   const pathname = usePathname();
 
@@ -53,12 +54,19 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await authClient.signOut();
+    
   };
 
   return (
-    <div className="fixed z-100 top-0 w-full flex justify-center mt-4">
+  <div
+  className={`w-full flex justify-center transition-all duration-300 ${
+    pathname === "/" 
+      ? "fixed top-0 mt-4 z-50" 
+      : ""
+  }`}
+>
       {/* 🔥 FIX: z-index added here */}
-      <nav className="w-11/12 md:w-10/12 relative z-50">
+      <nav className="w-full relative z-50">
 
         <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
 
@@ -139,7 +147,7 @@ const Navbar = () => {
                     </div>
 
                     <div className="p-2">
-                      <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">
+                      <Link href="/dashboard/recruiter" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">
                         <LayoutDashboard size={18} /> Dashboard
                       </Link>
 
@@ -237,7 +245,7 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  <Link href="/dashboard" className="text-gray-300 flex items-center gap-2">
+                  <Link href="/dashboard/recruiter" className="text-gray-300 flex items-center gap-2">
                     <LayoutDashboard size={18} /> Dashboard
                   </Link>
 
