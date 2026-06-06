@@ -10,7 +10,7 @@ const Page = () => {
 
 
   return (
-    <div className="w-11/12 text-center mx-auto space-y-3 ">
+    <div className="w-11/12 text-center h-screen mx-auto space-y-3 ">
       <h1 className="text-5xl  font-bold">
         Welcome Back! {session?.user?.name}
       </h1>
