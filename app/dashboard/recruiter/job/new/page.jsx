@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 
 import { useSession } from "@/lib/auth-client";
+import { getJobData } from "@/lib/action";
+import { toast } from "@heroui/react";
+import { redirect } from "next/navigation";
+
 
 /* ---------------- COMPANY PLAN ---------------- */
 
@@ -26,7 +30,6 @@ const companyPlan = {
 
 export default function CreateJobPage() {
   const { data: session } = useSession();
-
   const user = session?.user;
 
   const [loading, setLoading] = useState(false);
@@ -73,8 +76,7 @@ export default function CreateJobPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const canPostJob =
-    companyPlan.usedJobs < companyPlan.jobLimit;
+  const canPostJob = companyPlan.usedJobs < companyPlan.jobLimit;
 
   const handleSubmit = async () => {
     if (loading) return;
@@ -84,29 +86,59 @@ export default function CreateJobPage() {
       return;
     }
 
-    if (!validate()) return;
+    if (!canPostJob) {
+      alert("Job limit reached for your plan");
+      return;
+    }
 
-    setLoading(true);
+    if (!validate()) {
+      alert("Please fill required fields");
+      return;
+    }
 
-    const payload = {
-      ...form,
-      location: form.remote ? null : form.location,
-      salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
-      salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
-      status: "active",
+    try {
+      setLoading(true);
 
-      // ✅ FIX: company comes from plan, NOT user
-      companyId: companyPlan.id,
+      const payload = {
+        ...form,
+        location: form.remote ? null : form.location,
+        salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
+        salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+        status: "active",
+        companyId: companyPlan.id,
+        userId: user.id,
+      };
 
-      userId: user.id,
-    };
+      const res = await getJobData(payload);
+      console.log(res , "REW");
+      if (res?.insertedId || res?.acknowledged) {
+        alert("Job Posted Successfully");
+        redirect('/dashboard/recruiter')
 
-    console.log("JOB PAYLOAD →", payload);
-
-    setTimeout(() => {
-      alert("Job Published!");
+        // reset form
+        setForm({
+          title: "",
+          category: "",
+          type: "",
+          salaryMin: "",
+          salaryMax: "",
+          currency: "BDT",
+          location: "",
+          remote: false,
+          deadline: "",
+          responsibilities: "",
+          requirements: "",
+          benefits: "",
+        });
+      } else {
+        alert("Failed to create job");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -133,8 +165,9 @@ export default function CreateJobPage() {
         <div className="relative">
           <Briefcase className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
           <input
-            className={`w-full border rounded-lg pl-10 p-3 outline-none focus:ring-2 focus:ring-blue-500
-              ${errors.title ? "border-red-500" : "border-gray-300"}`}
+            className={`w-full border rounded-lg pl-10 p-3 outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.title ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Job Title"
             value={form.title}
             onChange={(e) => handleChange("title", e.target.value)}
@@ -147,11 +180,10 @@ export default function CreateJobPage() {
             <Grid className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <select
               value={form.category}
-              className={`w-full bg-zinc-950 text-white border rounded-lg pl-10 p-3 outline-none
-                ${errors.category ? "border-red-500" : "border-gray-300"}`}
-              onChange={(e) =>
-                handleChange("category", e.target.value)
-              }
+              className={`w-full bg-zinc-900 text-white border rounded-lg pl-10 p-3 outline-none ${
+                errors.category ? "border-red-500" : "border-gray-300"
+              }`}
+              onChange={(e) => handleChange("category", e.target.value)}
             >
               <option value="">Select Category</option>
               <option value="design">Design</option>
@@ -164,11 +196,10 @@ export default function CreateJobPage() {
             <Layers className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <select
               value={form.type}
-              className={`w-full border bg-zinc-950 text-white rounded-lg pl-10 p-3 outline-none
-                ${errors.type ? "border-red-500" : "border-gray-300"}`}
-              onChange={(e) =>
-                handleChange("type", e.target.value)
-              }
+              className={`w-full bg-zinc-900 text-white border rounded-lg pl-10 p-3 outline-none ${
+                errors.type ? "border-red-500" : "border-gray-300"
+              }`}
+              onChange={(e) => handleChange("type", e.target.value)}
             >
               <option value="">Select Job Type</option>
               <option value="fulltime">Full-time</option>
@@ -188,9 +219,7 @@ export default function CreateJobPage() {
               className="w-full border rounded-lg pl-10 p-3 outline-none"
               placeholder="Min Salary"
               value={form.salaryMin}
-              onChange={(e) =>
-                handleChange("salaryMin", e.target.value)
-              }
+              onChange={(e) => handleChange("salaryMin", e.target.value)}
             />
           </div>
 
@@ -201,18 +230,14 @@ export default function CreateJobPage() {
               className="w-full border rounded-lg pl-10 p-3 outline-none"
               placeholder="Max Salary"
               value={form.salaryMax}
-              onChange={(e) =>
-                handleChange("salaryMax", e.target.value)
-              }
+              onChange={(e) => handleChange("salaryMax", e.target.value)}
             />
           </div>
 
           <select
-            className="border rounded-lg bg-zinc-950 text-white p-3 outline-none"
+            className="border rounded-lg bg-zinc-900 text-white p-3 outline-none"
             value={form.currency}
-            onChange={(e) =>
-              handleChange("currency", e.target.value)
-            }
+            onChange={(e) => handleChange("currency", e.target.value)}
           >
             <option value="BDT">BDT</option>
             <option value="USD">USD</option>
@@ -232,18 +257,14 @@ export default function CreateJobPage() {
 
             <button
               type="button"
-              onClick={() =>
-                handleChange("remote", !form.remote)
-              }
+              onClick={() => handleChange("remote", !form.remote)}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
                 form.remote ? "bg-blue-600" : "bg-gray-300"
               }`}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                  form.remote
-                    ? "translate-x-6"
-                    : "translate-x-1"
+                  form.remote ? "translate-x-6" : "translate-x-1"
                 }`}
               />
             </button>
@@ -255,12 +276,10 @@ export default function CreateJobPage() {
           <div className="relative">
             <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <input
-              className="w-full border rounded-lg pl-10 p-3 outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Location (City, Country)"
+              className="w-full border rounded-lg pl-10 p-3 outline-none"
+              placeholder="Location"
               value={form.location}
-              onChange={(e) =>
-                handleChange("location", e.target.value)
-              }
+              onChange={(e) => handleChange("location", e.target.value)}
             />
           </div>
         )}
@@ -272,9 +291,7 @@ export default function CreateJobPage() {
             type="date"
             className="w-full border rounded-lg pl-10 p-3 outline-none"
             value={form.deadline}
-            onChange={(e) =>
-              handleChange("deadline", e.target.value)
-            }
+            onChange={(e) => handleChange("deadline", e.target.value)}
           />
         </div>
       </div>
@@ -291,9 +308,7 @@ export default function CreateJobPage() {
           rows={5}
           placeholder="Responsibilities"
           value={form.responsibilities}
-          onChange={(e) =>
-            handleChange("responsibilities", e.target.value)
-          }
+          onChange={(e) => handleChange("responsibilities", e.target.value)}
         />
 
         <textarea
@@ -301,23 +316,16 @@ export default function CreateJobPage() {
           rows={5}
           placeholder="Requirements"
           value={form.requirements}
-          onChange={(e) =>
-            handleChange("requirements", e.target.value)
-          }
+          onChange={(e) => handleChange("requirements", e.target.value)}
         />
 
-        <div className="relative">
-          <Gift className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <textarea
-            className="w-full border rounded-lg pl-10 p-3 outline-none"
-            rows={4}
-            placeholder="Benefits (Optional)"
-            value={form.benefits}
-            onChange={(e) =>
-              handleChange("benefits", e.target.value)
-            }
-          />
-        </div>
+        <textarea
+          className="w-full border rounded-lg p-3 outline-none"
+          rows={4}
+          placeholder="Benefits"
+          value={form.benefits}
+          onChange={(e) => handleChange("benefits", e.target.value)}
+        />
       </div>
 
       {/* SUBMIT */}
@@ -325,7 +333,7 @@ export default function CreateJobPage() {
         <button
           onClick={handleSubmit}
           disabled={!canPostJob || loading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:opacity-50"
         >
           <Send className="w-4 h-4" />
           {loading ? "Publishing..." : "Publish Job"}
