@@ -1,22 +1,26 @@
-"use client";
 
+
+import { auth } from "@/lib/auth";
 import { useSession } from "@/lib/auth-client";
+import JobTable from "@/ui/JobTable";
 import StatsGrid from "@/ui/StateGrid";
-import React from "react";
+import { headers } from "next/headers";
 
-const Page = () => {
-  const { data: session, isPending } = useSession();
-
-
+const Page = async() => {
+const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   return (
-    <div className="w-11/12 text-center h-screen mx-auto space-y-3 ">
-      <h1 className="text-5xl  font-bold">
+    <div className="w-10/12  mx-auto space-y-3">
+      <h1 className="text-5xl text-center font-bold">
         Welcome Back! {session?.user?.name}
       </h1>
 
       <p>{session?.user?.email}</p>
-      <StatsGrid/>
+
+      <StatsGrid />
+      <JobTable  />
     </div>
   );
 };
