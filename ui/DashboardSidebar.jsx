@@ -20,7 +20,7 @@ export default function DashboardSidebar() {
     },
     {
       name: "My Company",
-      href: "/dashboard/myCompany",
+      href: "/dashboard/recruiter/Company",
       icon: User,
     },
     {
