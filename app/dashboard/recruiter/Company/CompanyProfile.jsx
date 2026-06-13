@@ -2,8 +2,8 @@
 import { createCompany } from '@/lib/action/company';
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function CompanyProfile({recruiter}) {
-  const [company, setCompany] = useState(null); 
+export default function CompanyProfile({recruiter , recruiterCompany}) {
+  const [company, setCompany] = useState(recruiterCompany); 
   const [isLoading, setIsLoading] = useState(true); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
