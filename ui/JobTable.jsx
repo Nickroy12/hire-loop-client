@@ -1,13 +1,15 @@
 
+import { getLoggedRecruiterCompany } from "@/lib/api/companies";
 import { getCompanyJob } from "@/lib/api/job";
 import { Button, Table } from "@heroui/react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
-const JobTable = async ({ companyId = "company_9f3k2a1x" }) => {
-  const jobs = await getCompanyJob(companyId);
+const JobTable = async () => {
+  const company = await getLoggedRecruiterCompany()
+  const jobs = await getCompanyJob(company._id);
 
   return (
-    <div className="w-10/12 mx-auto">
+    <div className="w-10/12 h-screen mx-auto">
       <h1 className="text-xl font-semibold mb-4">Manage Jobs</h1>
 
       <Table aria-label="Job Table">

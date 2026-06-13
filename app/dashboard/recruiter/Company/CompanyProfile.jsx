@@ -200,7 +200,7 @@ export default function CompanyProfile({recruiter , recruiterCompany}) {
     <div className="min-h-screen p-6 flex flex-col items-start justify-start font-sans bg-[#09090b] w-full">
       
       {/* STATE 1: কোনো কোম্পানি যখন রেজিস্টার করা নেই */}
-      {!company && (
+      {!company?.name && (
         <div className="w-full max-w-5xl my-4 p-8 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm text-center mx-auto sm:mx-0">
           <div className="w-16 h-16 bg-blue-950/50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-900/50">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -221,7 +221,7 @@ export default function CompanyProfile({recruiter , recruiterCompany}) {
       )}
 
       {/* STATE 2: কোম্পানি কার্ড ভিউ */}
-      {company && (
+      {company?.name && (
         <div className="w-full max-w-2xl my-4 space-y-6 mx-auto sm:mx-0">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
             <h2 className="text-lg font-bold text-white">Company Profile</h2>
