@@ -2,9 +2,15 @@
 
 import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation'; // useRouter ইমপোর্ট করা হয়েছে
 import React from 'react';
 
 const LoginPage = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter(); // router ইনিশিয়ালাইজ করা হয়েছে
+  const redirectTo = searchParams.get("redirect") || '/';
+  console.log(redirectTo , "red");
+
   const dataSubmit = async (e) => {
     e.preventDefault();
 
@@ -17,7 +23,6 @@ const LoginPage = () => {
       const { data, error } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: '/',
       });
 
       if (error) {
@@ -27,6 +32,11 @@ const LoginPage = () => {
 
       alert('Login successful!');
       console.log(data);
+      
+      // সফল লগইনের পর ইউজারকে রিডাইরেক্ট করা হচ্ছে
+      router.push(redirectTo);
+      router.refresh(); // অথেনটিকেশন স্টেট আপডেট করার জন্য
+      
     } catch (err) {
       console.error(err);
       alert('Something went wrong!');
@@ -98,7 +108,7 @@ const LoginPage = () => {
         <p className="text-center mt-5 text-sm text-white/70">
           Don't have an account?{' '}
           <Link
-            href="/signup"
+            href={`/signup?redirect=${redirectTo}`}
             className="text-purple-400 hover:text-purple-300"
           >
             Registration

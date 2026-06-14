@@ -4,11 +4,16 @@ import { useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { Upload } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation"; // Fixed import here
 
 export default function SignupPage() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
+
+  const searchParams = useSearchParams();
+  const router = useRouter(); // Works correctly now
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const handleChange = (e) => {
     const file = e.target.files?.[0];
@@ -55,6 +60,7 @@ export default function SignupPage() {
 
       let imageUrl = "";
 
+      // Ensure a file was actually selected before trying to upload
       if (imageFile && imageFile.size > 0) {
         imageUrl = await uploadToImgBB(imageFile);
       }
@@ -65,7 +71,6 @@ export default function SignupPage() {
         password,
         image: imageUrl,
         role,
-        callbackURL: "/",
       });
 
       if (error) {
@@ -74,7 +79,10 @@ export default function SignupPage() {
       }
 
       alert("Account created successfully!");
-      console.log(data);
+      
+      // Redirect the user to the requested page or home
+      router.push(redirectTo);
+      
     } catch (error) {
       console.error(error);
       alert("Something went wrong!");
@@ -238,7 +246,7 @@ export default function SignupPage() {
         <p className="text-center text-white/60 text-sm mt-6">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={`login?redirect=${redirectTo}`}
             className="text-purple-400 hover:text-purple-300"
           >
             Login

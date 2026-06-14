@@ -23,7 +23,7 @@ export default function CreateJobPage({company}) {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-console.log(company , "A Com pani");
+
   // Updated state based on your image reference
   // const [mockCompany] = useState({
   //   name: "Knowledge IT Soft (Auto-filled)",
@@ -141,6 +141,7 @@ console.log(company , "A Com pani");
         benefits: form.benefits,
         status: "active",
         companyId: company._id,
+        companyLogo: company.logo,
         userId: user.id,
         createdAt: new Date(),
       };
