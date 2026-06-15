@@ -64,13 +64,14 @@ export default function SignupPage() {
       if (imageFile && imageFile.size > 0) {
         imageUrl = await uploadToImgBB(imageFile);
       }
-
+       const plan = role === "seeker" ? "seeker_free" : "recruiter_free"
       const { data, error } = await authClient.signUp.email({
         name,
         email,
         password,
         image: imageUrl,
         role,
+        plan
       });
 
       if (error) {

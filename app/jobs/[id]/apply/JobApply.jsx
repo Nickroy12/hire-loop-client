@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { applicantSub } from '@/lib/action/Application'
+// TODO: এখানে আপনার lib থেকে ফাংশনটি ইমপোর্ট করুন
+// import { submitApplication } from '@/lib/applications'
 
-const JobApply = ({ jobId, user }) => {
+const JobApply = ({ jobId, job, user: applicant }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -14,38 +17,39 @@ const JobApply = ({ jobId, user }) => {
     setLoading(true)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
-    const applicationData = {
-      jobId,
-      name: formData.get('name'),
-      email: formData.get('email'),
-      resumeText: formData.get('resumeText'), // শুধুমাত্র রেজুমি টেক্সট পাঠানো হচ্ছে
+    // ফর্মের ইনপুট ফিল্ডের ডেটা অবজেক্ট আকারে নেওয়া
+    const formEl = e.currentTarget
+    const formData = {
+      name: formEl.name.value,
+      email: formEl.email.value,
+      resumeText: formEl.resumeText.value,
     }
 
-    try {
-      const res = await fetch('/api/applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(applicationData),
-      })
-
-      if (!res.ok) {
-        throw new Error('Something went wrong. Please try again.')
-      }
-
-      setSuccess(true)
-      
-      setTimeout(() => {
-        router.push(`/jobs/${jobId}`)
-      }, 3000)
-
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    // আপনার ইমেজের স্ট্রাকচার অনুযায়ী ডেটা কম্বাইন করা হলো
+    const submissionData = {
+      jobId: job?.id || jobId,
+      jobTitle: job?.title,
+      applicantName: applicant?.name,
+      applicantId: applicant?.id,
+      applicantEmail: applicant?.email,
+      ...formData
     }
+    // console.log(submissionData , "ApplyData");
+        
+    const res = await applicantSub(submissionData)
+    if(res.insertedId){
+      alert("Your Application Submitted")
+    }
+    // আপনার lib ফোল্ডারের ফাংশনটি এখানে কল করুন
+    // await submitApplication(submissionData)
+    
+    setSuccess(true)
+    
+    setTimeout(() => {
+      router.push(`/jobs/${jobId}`)
+    }, 3000)
+
+    setLoading(false)
   }
 
   if (success) {
@@ -93,7 +97,7 @@ const JobApply = ({ jobId, user }) => {
               type='text' 
               id='name'
               name='name'
-              defaultValue={user?.name || ''}
+              defaultValue={applicant?.name || ''}
               required
               placeholder='John Doe' 
               className='w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all'
@@ -107,14 +111,14 @@ const JobApply = ({ jobId, user }) => {
               type='email' 
               id='email'
               name='email'
-              defaultValue={user?.email || ''}
+              defaultValue={applicant?.email || ''}
               required
               placeholder='john@example.com' 
               className='w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all'
             />
           </div>
 
-          {/* Resume Text Input (ক্লিন ও মিনিমালিস্ট টেক্সট এরিয়া) */}
+          {/* Resume Text Input */}
           <div className='flex flex-col gap-2'>
             <div className='flex justify-between items-center'>
               <label htmlFor='resumeText' className='text-sm font-medium text-zinc-300'>Resume / CV Content</label>
@@ -123,10 +127,9 @@ const JobApply = ({ jobId, user }) => {
             <input 
               id='resumeText'
               name='resumeText'
-              rows={12} // কোড বা টেক্সট যেন ক্লিয়ারলি দেখা যায় তার জন্য হাইট বাড়ানো হয়েছে
               required
               placeholder="Paste your Resume Link" 
-              className='w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm leading-relaxed whitespace-pre'
+              className='w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm leading-relaxed'
             />
           </div>
 
