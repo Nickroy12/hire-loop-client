@@ -261,7 +261,7 @@ export default function CompanyProfile({recruiter , recruiterCompany}) {
                 </div>
               </div>
               <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${getStatusBadgeColor(company.status || 'Pending')}`}>
-                {company.status || 'Pending'}
+                {company.status }
               </span>
             </div>
 

@@ -1,6 +1,8 @@
 import { stripe } from '@/lib/stipe'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { email } from 'better-auth'
+import { setSubscription } from '@/lib/action/subscription'
 
 export default async function Success({ searchParams }) {
   const { session_id } = await searchParams
@@ -11,7 +13,7 @@ export default async function Success({ searchParams }) {
   const {
     status,
     customer_details: { email: customerEmail },
-    matadata
+    metadata
   } = await stripe.checkout.sessions.retrieve(session_id, {
     expand: ['line_items', 'payment_intent']
   })
@@ -21,6 +23,13 @@ export default async function Success({ searchParams }) {
   }
 
   if (status === 'complete') {
+    const subInfo ={
+      email: customerEmail,
+      planId: metadata.planId
+    }
+    console.log(subInfo , "sub");
+    const result = await setSubscription(subInfo)
+    console.log(result , "subs");
     return (
       <section className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 antialiased transition-colors duration-200">
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/40 p-8 text-center border border-slate-100 dark:border-slate-800">

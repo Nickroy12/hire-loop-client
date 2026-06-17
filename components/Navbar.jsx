@@ -15,6 +15,12 @@ import {
 
 import { useSession, authClient } from "@/lib/auth-client";
 
+// ইমেজ থেকে নেওয়া ডাইনামিক অবজেক্ট ম্যাপিং
+const dashboardLinks = {
+  seeker: '/dashboard/seeker',
+  recruiter: '/dashboard/recruiter',
+  admin: '/dashboard/admin'
+};
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -31,6 +37,10 @@ const Navbar = () => {
     { name: "Companies", href: "/companies" },
     { name: "Pricing", href: "/pricing" },
   ];
+
+  // ব্যবহারকারীর রোলের ওপর ভিত্তি করে ডাইনামিক রুট নির্ধারণ (ডিফল্ট হিসেবে seeker রাখা হয়েছে)
+  const userRole = session?.user?.role || "seeker";
+  const dashboardHref = dashboardLinks[userRole] || "/dashboard/seeker";
 
   useEffect(() => {
     setOpen(false);
@@ -54,30 +64,22 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await authClient.signOut();
-    
   };
 
   return (
-  <div
-  className={`w-full flex justify-center transition-all duration-300 ${
-    pathname === "/" 
-      ? "fixed top-0 mt-4 z-50" 
-      : ""
-  }`}
->
-      {/* 🔥 FIX: z-index added here */}
+    <div
+      className={`w-full flex justify-center transition-all duration-300 ${
+        pathname === "/" ? "fixed top-0 mt-4 z-50" : ""
+      }`}
+    >
       <nav className="w-full relative z-50">
-
         <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
-
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg bg-violet-600 text-white flex items-center justify-center font-bold">
               H
             </div>
-            <span className="text-white font-semibold text-lg">
-              HireLoop
-            </span>
+            <span className="text-white font-semibold text-lg">HireLoop</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -133,10 +135,8 @@ const Navbar = () => {
                   <ChevronDown size={16} className="text-gray-400" />
                 </button>
 
-                {/* 🔥 FIX: high z-index dropdown */}
                 {profileOpen && (
                   <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl z-[9999] overflow-hidden">
-
                     <div className="p-4 border-b border-white/10">
                       <p className="text-white font-medium">
                         {session.user.name}
@@ -147,15 +147,25 @@ const Navbar = () => {
                     </div>
 
                     <div className="p-2">
-                      <Link href="/dashboard/recruiter" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">
+                      {/* Dynamic Dashboard Link */}
+                      <Link
+                        href={dashboardHref}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5"
+                      >
                         <LayoutDashboard size={18} /> Dashboard
                       </Link>
 
-                      <Link href="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5"
+                      >
                         <User size={18} /> Profile
                       </Link>
 
-                      <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">
+                      <Link
+                        href="/settings"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5"
+                      >
                         <Settings size={18} /> Settings
                       </Link>
 
@@ -245,15 +255,25 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  <Link href="/dashboard/recruiter" className="text-gray-300 flex items-center gap-2">
+                  {/* Dynamic Dashboard Link */}
+                  <Link
+                    href={dashboardHref}
+                    className="text-gray-300 flex items-center gap-2"
+                  >
                     <LayoutDashboard size={18} /> Dashboard
                   </Link>
 
-                  <Link href="/profile" className="text-gray-300 flex items-center gap-2">
+                  <Link
+                    href="/profile"
+                    className="text-gray-300 flex items-center gap-2"
+                  >
                     <User size={18} /> Profile
                   </Link>
 
-                  <Link href="/settings" className="text-gray-300 flex items-center gap-2">
+                  <Link
+                    href="/settings"
+                    className="text-gray-300 flex items-center gap-2"
+                  >
                     <Settings size={18} /> Settings
                   </Link>
 

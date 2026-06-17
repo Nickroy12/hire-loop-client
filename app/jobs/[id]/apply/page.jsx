@@ -39,12 +39,13 @@ const ApplyPage = async ({ params }) => {
   const [job, applications, plan] = await Promise.all([
     getJobById(id),
     getApplicationByApplicant(user.id),
-    getPlanById(user.plan || 'seeker_free')
+    getPlanById(user.plan)
   ])
-
+  console.log(job , applications , plan);
+// console.log(plan , "pori");
   // ৪. সেফটি চেক (যদি API থেকে প্ল্যান বা ডাটা না আসে)
   const maxApplicationsPerMonth = plan?.maxApplicationsPerMonth || 5; // আপনার ডিফল্ট ফ্রি লিমিট দিতে পারেন
-  const planName = plan?.name || 'Free';
+  const planName = user?.plan 
   const appliedCount = applications?.length || 0;
 
   const isLimitReached = appliedCount >= maxApplicationsPerMonth
